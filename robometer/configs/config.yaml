@@ -79,7 +79,7 @@ data:
   resized_width: null   # Width to resize images/videos to
   load_embeddings: false
   min_frames_per_trajectory: 5 # Minimum number of frames required per trajectory (trajectories with fewer frames will be filtered out)
-  use_multi_image: false  # If True, feed frames as a list of images instead of converting to video (avoids encoding overhead)
+  use_multi_image: true # If True, feed frames as a list of images instead of converting to video (avoids encoding overhead)
   shuffle_progress_frames: false  # If True, shuffle progress frames (except the first frame) and labels during training
   traj_same_source_prob: 0.5  # Probability of sampling alternative task instruction from same data source
 
@@ -224,7 +224,7 @@ loss:
 logging:
   save_model: true
   save_processor: true
-  log_to: []
+  log_to: [wandb]
   wandb_project: "robometer"
   wandb_entity: clvr
   wandb_notes: "training Robometer"
@@ -232,10 +232,13 @@ logging:
   # SaveBestCallback configuration
   save_best:
     metric_names: 
-      - eval_rew_align/pearson_mw_eval
-      - eval_p_rank/spearman_mw_eval
+      - eval_p_rank/kendall_last_utd_so101_clean_top
+      - eval_p_rank/kendall_last_usc_xarm
+      - eval_p_rank/kendall_last_usc_franka
+      - eval_p_rank/kendall_last_rfm_new_mit_franka_nowrist
+      - eval_p_rank/kendall_last_usc_trossen
 
-    greater_is_better: [true, true]  # Whether higher values are better for each metric (must match metric_names length)
+    greater_is_better: [true, true, true, true, true]  # Whether higher values are better for each metric (must match metric_names length)
     keep_top_k: 5  # Number of best checkpoints and uploads to keep
     save_every: 1000  # Save 'latest' checkpoint every N steps (should be multiple of custom_eval_steps). Set to null to disable.
     

@@ -2,6 +2,6 @@ __pycache__/*
 .venv-robodopamine/*
 outputs/*
 unsloth_compiled_cache/*
-*.pyc
 venv_robodopamine.txt
 baseline_eval_output/*
+*.py[cod]
