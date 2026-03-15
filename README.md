@@ -126,9 +126,11 @@ uv run python scripts/example_inference_local.py \
 ### Training
 
 **Train on RBM-1M in-distribution and evaluate on RBM-1M-OOD**
+First, modify `robometer/configs/config.yaml`'s `wandb_entity` flag to your WandB entity. To disable WandB logging, remove "wandb" from the `log_to` list in the config yaml file.
+See more flags in the config file (e.g., batch size, learning rates, etc.)
 
 ```bash
-uv run accelerate launch --config_file robometer/configs/distributed/fsdp.yaml train.py \
+uv run accelerate launch --config_file robometer/configs/distributed/ddp.yaml --num_processes=N_GPUS_YOU_HAVE train.py \
   data.train_datasets=[rbm-1m-id] \
   data.eval_datasets=[rbm-1m-ood] \
   data.max_frames=8 \
@@ -137,15 +139,18 @@ uv run accelerate launch --config_file robometer/configs/distributed/fsdp.yaml t
   training.max_steps=15000 \
   custom_eval.reward_alignment=[rbm-1m-ood] \
   custom_eval.policy_ranking=[rbm-1m-ood] \
-  custom_eval.confusion_matrix=[rbm-1m-ood]
+  custom_eval.confusion_matrix=[rbm-1m-ood] \
+  logging.save_best.metric_names=[eval_p_rank/kendall_last_utd_so101_clean_top,eval_p_rank/kendall_last_usc_xarm,eval_p_rank/kendall_last_usc_franka,eval_p_rank/kendall_last_rfm_new_mit_franka_nowrist,eval_p_rank/kendall_last_usc_trossen] \
+  logging.save_best.greater_is_better=[True,True,True,True,True]
 ```
 
 **LIBERO: train on 10 / object / spatial / goal, test on 90.**
+First, modify `robometer/configs/config.yaml`'s `wandb_entity` flag to your WandB entity. To disable WandB logging, remove "wandb" from the `log_to` list in the config yaml file.
 
 ```bash
-uv run accelerate launch --config_file robometer/configs/distributed/fsdp.yaml train.py \
+uv run accelerate launch --config_file robometer/configs/distributed/ddp.yaml train.py \
   data.train_datasets=[libero_pi0] \
-  data.eval_datasets=[mw] \
+  data.eval_datasets=[libero_pi0] \
   data.max_frames=8 \
   model.train_progress_head=true \
   model.train_preference_head=true \
