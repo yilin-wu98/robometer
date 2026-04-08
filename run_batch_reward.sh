@@ -1,1 +1,1 @@
-python scripts/batch_val_reward_annotations.py  --data-root /scratch/jarnav/SAILOR/DROID/preprocessed_v2 --split train --concat-order "right,left,wrist" --view right 
+ uv run python scripts/example_inference_droid_batch.py   --eval-server-url http://localhost:8000   --data-root /scratch/jarnav/SAILOR/DROID/preprocessed_v2 --split val     --view right
