@@ -1,0 +1,1 @@
+python scripts/batch_val_reward_annotations.py  --data-root /scratch/jarnav/SAILOR/DROID/preprocessed_v2 --split train --concat-order "right,left,wrist" --view right 
