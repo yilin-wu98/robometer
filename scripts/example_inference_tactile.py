@@ -445,7 +445,7 @@ def create_progress_video(
     output_path: str,
     success_probs: Optional[np.ndarray] = None,
     success_threshold: float = 0.5,
-    display_views: Optional[Dict[str, np.ndarray]] = None,
+    display_views: np.ndarray = None,
     fps: float = 4.0,
     title: str = "",
 ) -> None:
@@ -469,7 +469,7 @@ def create_progress_video(
     import matplotlib.animation as animation
 
     n_frames = len(rewards)
-    has_views = display_views is not None and all(v in display_views for v in _DROID_VIEW_ORDER)
+    has_views = display_views is not None
     has_success = success_probs is not None and len(success_probs) == n_frames
     success_binary = (success_probs > success_threshold).astype(np.int32) if has_success else None
 
@@ -511,12 +511,10 @@ def create_progress_video(
     im_handles: List[Any] = []
     if has_views:
         ax_views = [fig.add_subplot(gs[1, i]) for i in range(3)]
-        for i, vname in enumerate(_DROID_VIEW_ORDER):
-            ax = ax_views[i]
-            ax.axis("off")
-            ax.set_title(vname.capitalize(), fontsize=10, pad=3)
-            im = ax.imshow(display_views[vname][0])
-            im_handles.append(im)
+        ax = ax_views[0]
+        ax.axis("off")
+        im = ax.imshow(display_views[0])
+        im_handles.append(im)
 
     all_artists: List[Any] = [
         line_prog, vline_prog,
@@ -538,8 +536,7 @@ def create_progress_video(
         vline_succ_prob.set_xdata([t])
 
         if has_views:
-            for i, vname in enumerate(_DROID_VIEW_ORDER):
-                im_handles[i].set_data(display_views[vname][t])
+            im_handles[0].set_data(display_views[t])
 
         return all_artists
 
@@ -606,7 +603,6 @@ def main() -> None:
 
     video_path = Path(args.video)
     out_path = Path(args.out) if args.out is not None else video_path.with_name(video_path.stem + "_rewards.npy")
-    print('args.task', args.task)
     if args.task == "":
         ## infer the annotation file path from video path 
         annotation_folder = video_path.parent.parent.parent / "annotations"
@@ -620,20 +616,21 @@ def main() -> None:
     # Load at full resolution so we can keep display views at original quality
     all_frames = load_frames_input(str(args.video), fps=float(args.fps))
 
-    if args.view is not None:
-        # Split all three views for display; downsample only the selected view for inference
-        display_views: Optional[Dict[str, np.ndarray]] = {
-            vname: crop_view_from_concatenated(all_frames, vname)
-            for vname in _DROID_VIEW_ORDER
-        }
+    # if args.view is not None:
+    #     # Split all three views for display; downsample only the selected view for inference
+    #     # display_views: Optional[Dict[str, np.ndarray]] = {
+    #     #     vname: crop_view_from_concatenated(all_frames, vname)
+    #     #     for vname in _DROID_VIEW_ORDER
+    #     # }
         # frames = display_views[args.view][:, ::4, ::4, :]
-        frames = display_views[args.view]
-        print(f"Using '{args.view}' view for inference — shape: {frames.shape}")
-    else:
-        display_views = None
-        # frames = all_frames[:, ::4, ::4, :]
-        frames = all_frames
-        print(f"Inference frame shape: {frames.shape}")
+    display_views = all_frames
+    frames = all_frames
+    print(f"Inference frame shape: {frames.shape}")
+    # else:
+    #     display_views = None
+    #     # frames = all_frames[:, ::4, ::4, :]
+    #     frames = all_frames
+    #     print(f"Inference frame shape: {frames.shape}")
     import time
     time_start = time.time()
     rewards, success_probs = compute_rewards_per_frame(
@@ -650,7 +647,7 @@ def main() -> None:
     success_path = out_path.with_name(out_path.stem + "_success_probs.npy")
     np.save(str(success_path), success_probs)
 
-    video_out_path = out_path.with_name(out_path.stem +f"_{args.view}" +  "_progress.mp4")
+    video_out_path = out_path.with_name(out_path.stem +f"_{args.view}" + f"_{args.task}" +  "_progress.mp4")
     print(f"Rendering progress video → {video_out_path} …")
     create_progress_video(
         rewards=rewards,

@@ -36,6 +36,12 @@ import numpy as np
 import requests
 
 import matplotlib.pyplot as plt
+TASK_INSTRUCTIONS = {
+    "pour": "Pour the cup of beans into the blue bowl without spilling",
+    "marker": "put the marker in the cup",
+    "towel": "put the red towel in the basket",
+    "stack": "pick up the blue bowl and stack on top of the other bowl",
+    "bag":"put the bag of chips on the green plate"}
 
 
 def create_combined_progress_success_plot(
@@ -603,6 +609,10 @@ def process_episode(
         if annotation is None:
             raise FileNotFoundError(f"No --task and annotation missing: {annotation_file}")
         task = annotation["texts"][0]
+        # for key, value in TASK_INSTRUCTIONS.items():
+        #     if key in annotation["episode_id_orig"]: 
+        #         print(f"Found task instruction for {annotation['episode_id_orig']}: {value}",)
+        #         task = value 
         print(f"Inferred task: {task}")
     else:
         task = task_override
